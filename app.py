@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_login import LoginManager
+# from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_heroku import Heroku
 from flask_cors import CORS
@@ -13,7 +13,7 @@ login_manager = LoginManager()
     # how to load a user from an ID
     # Where to send users when they need to login
 
-app.config["SQLALCHEMY_DATABASE_URI"]=''
+app.config["SQLALCHEMY_DATABASE_URI"]='postgres://lidmlzcpybffad:cd8da9bb7e6dc8095835c52e2a99ec481b09e5f15ba86aae1e231f303589ee3d@ec2-34-195-169-25.compute-1.amazonaws.com:5432/d81o7elv59btb3'
 heroku = Heroku(app)
 db = SQLAlchemy(app)
 
