@@ -11,6 +11,8 @@ flask-login = "*"
 flask-sqlalchemy = "*"
 flask-heroku = "*"
 flask-cors = "*"
+gunicorn = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.7"
