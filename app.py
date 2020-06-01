@@ -1,8 +1,8 @@
-from flask import Flask
-# from flask_login import LoginManager
+from flask import Flask, request, jsonify
+from flask_login import LoginManager, login_user
 from flask_sqlalchemy import SQLAlchemy
-from flask_heroku import Heroku
 from flask_cors import CORS
+from flask_heroku import Heroku
 
 app = Flask(__name__)
 CORS(app)
@@ -13,7 +13,8 @@ login_manager = LoginManager()
     # how to load a user from an ID
     # Where to send users when they need to login
 
-app.config["SQLALCHEMY_DATABASE_URI"]='postgres://lidmlzcpybffad:cd8da9bb7e6dc8095835c52e2a99ec481b09e5f15ba86aae1e231f303589ee3d@ec2-34-195-169-25.compute-1.amazonaws.com:5432/d81o7elv59btb3'
+app.secret_key = 'secretKey'
+app.config["SQLALCHEMY_DATABASE_URI"]='postgres://fpsgyyfdqylmmf:339a68330c55fe4fbe0493882994f6865ae2b7d9b123cfb20fc04b83dc59b979@ec2-34-195-169-25.compute-1.amazonaws.com:5432/d7dcdknsgn7rfb'
 heroku = Heroku(app)
 db = SQLAlchemy(app)
 
@@ -26,11 +27,13 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
-    author = db.Column(db.String)
+    password = db.Column(db.String)
+    email = db.Column(db.String)
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, email):
         self.username = username
         self.password = password
+        self.email = email
 
     def is_authenticated(self):
         return True
@@ -58,6 +61,39 @@ def load_user(user_id):
 @app.route("/")
 def home():
     return"<h1>Hi from Flask</h1>"
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.content_type == 'application/json':
+        post_data = request.get_json()
+        username = post_data.get('username')
+        password = post_data.get('password')
+        email = post_data.get('email')
+        registered_user = User.query.filter_by(username=username, password=password, email = email).first()
+        if registered_user is None:
+            return jsonify('Username or password is invalid')
+        login_user(registered_user)
+        return jsonify('Logged in')
+    return jsonify('something went wrong')
+
+@app.route('/new-user', methods=['POST'])
+def new_user():
+    if request.content_type == 'application/json':
+        post_data = request.get_json()
+        username = post_data.get('username')
+        password = post_data.get('password')
+        email = post_data.get('email')
+        reg = User(username, password, email)
+        db.session.add(reg)
+        db.session.commit()
+        return jsonify('User Created')
+    return jsonify('Something went wrong')
+
+@app.route('/get-users', methods=['GET'])
+def get_users():
+    all_users = db.session.query(User.id, User.username, User.password, User.email).all()
+    return jsonify(all_users)
 
 
 if __name__ == "__main__":
